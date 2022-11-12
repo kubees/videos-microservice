@@ -27,8 +27,8 @@ func main() {
 
 	router := httprouter.New()
 
+	router.GET("/", HandleHealthz)
 	router.GET("/:id", HandleGetVideoById)
-	router.GET("/healthz", HandleHealthz)
 
 	fmt.Println("Running...")
 	log.Fatal(http.ListenAndServe(":10010", router))
