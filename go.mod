@@ -5,6 +5,7 @@ go 1.19
 require (
 	github.com/go-redis/redis/v8 v8.0.0-beta.7
 	github.com/julienschmidt/httprouter v1.3.0
+	github.com/prometheus/client_golang v1.14.0
 	github.com/sirupsen/logrus v1.6.0
 )
 
@@ -15,7 +16,6 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/konsorten/go-windows-terminal-sequences v1.0.3 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
-	github.com/prometheus/client_golang v1.14.0 // indirect
 	github.com/prometheus/client_model v0.3.0 // indirect
 	github.com/prometheus/common v0.37.0 // indirect
 	github.com/prometheus/procfs v0.8.0 // indirect
