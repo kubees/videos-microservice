@@ -14,6 +14,7 @@ import (
 var environment = os.Getenv("ENVIRONMENT")
 var redisHost = os.Getenv("REDIS_HOST")
 var redisPort = os.Getenv("REDIS_PORT")
+var password = os.Getenv("PASSWORD")
 var flaky = os.Getenv("FLAKY")
 
 var ctx = context.Background()
@@ -23,6 +24,7 @@ func main() {
 	r := redis.NewClient(&redis.Options{
 		Addr: redisHost + ":" + redisPort,
 		DB:   0,
+		Password: password,
 	})
 	rdb = r
 
