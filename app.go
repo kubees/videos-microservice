@@ -2,13 +2,17 @@ package main
 
 import (
 	"context"
-	"go.uber.org/zap"
 	"net/http"
 	"os"
 
-	"github.com/go-redis/redis/extra/redisotel/v9"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
+	"go.uber.org/zap"
+
 	"github.com/go-redis/redis/v9"
+	"github.com/google/uuid"
 	"github.com/julienschmidt/httprouter"
+	"github.com/kubees/videos-microservice/jaeger"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 	metrics "github.com/slok/go-http-metrics/metrics/prometheus"
@@ -30,6 +34,7 @@ var ctx = context.Background()
 var rdb redis.UniversalClient
 var Logger, _ = zap.NewProduction()
 var Sugar = Logger.Sugar()
+var traceProvider = jaeger.NewJaegerTracerProvider()
 
 func main() {
 	r := redis.NewUniversalClient(&redis.UniversalOptions{
@@ -38,18 +43,6 @@ func main() {
 		Password: password,
 	})
 	rdb = r
-
-	// Enable tracing instrumentation.
-	if err := redisotel.InstrumentTracing(r); err != nil {
-		Sugar.Errorw("Error while instrumenting redis traces")
-		panic(err)
-	}
-
-	// Enable metrics instrumentation.
-	if err := redisotel.InstrumentMetrics(r); err != nil {
-		Sugar.Errorw("Error while instrumenting redis metrics")
-		panic(err)
-	}
 
 	// Create our middleware.
 	promMiddleware := middleware.New(middleware.Config{
@@ -74,7 +67,13 @@ func main() {
 
 }
 
-func video(writer http.ResponseWriter, request *http.Request, p httprouter.Params) (response string) {
+func video(writer http.ResponseWriter, request *http.Request, p httprouter.Params, ctx context.Context, requestID uuid.UUID, ip string) (response string) {
+
+	span := trace.SpanFromContext(ctx)
+	defer span.End()
+	span.SetAttributes(attribute.Key("Function").String("GET VIDEO FROM DB"))
+	span.SetAttributes(attribute.Key("UUID").String(requestID.String()))
+	span.SetAttributes(attribute.Key("Client IP").String(ip))
 
 	id := p.ByName("id")
 	Sugar.Infof("Getting video with the ID: %v\n", id)
@@ -85,6 +84,7 @@ func video(writer http.ResponseWriter, request *http.Request, p httprouter.Param
 		return "{}"
 	} else if err != nil {
 		Sugar.Errorw("Error while fetching video from DB", err)
+		span.RecordError(err)
 		panic(err)
 	} else {
 		Sugar.Infof("Successfully fetched the video with ID %v from redis\n", id)
