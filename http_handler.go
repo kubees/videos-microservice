@@ -27,14 +27,14 @@ func HandleHealthz(w http.ResponseWriter, r *http.Request, p httprouter.Params) 
 
 func HandleGetVideoById(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 
-	tr := traceProvider.Tracer("playlist-ms-main-component")
-	ctx, span := tr.Start(context.Background(), "GET Video By ID")
+	tr := traceProvider.Tracer("videos-ms-main-component")
+	ctx, span := tr.Start(r.Context(), "GET Video By ID")
 	id := uuid.New()
 	ip := strings.Split(r.RemoteAddr, ":")[0]
 
 	defer span.End()
 
-	span.SetAttributes(attribute.Key("Function").String("GetPlaylistHandler"))
+	span.SetAttributes(attribute.Key("Function").String("GetVideosByIDHandler"))
 	span.SetAttributes(attribute.Key("Protocol").String(r.Proto))
 	span.SetAttributes(attribute.Key("UUID").String(id.String()))
 	span.SetAttributes(attribute.Key("Client IP").String(strings.Split(r.RemoteAddr, ":")[0]))
