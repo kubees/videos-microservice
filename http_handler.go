@@ -17,11 +17,14 @@ import (
 func HandleHealthz(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	tr := traceProvider.Tracer("videos-ms-main-component")
 	id := uuid.New()
+	ip := strings.Split(r.RemoteAddr, ":")[0]
 	_, span := tr.Start(context.Background(), "healthz")
 	span.SetAttributes(attribute.Key("Protocol").String(r.Proto))
 	span.SetAttributes(attribute.Key("UUID").String(id.String()))
-	span.SetAttributes(attribute.Key("Client IP").String(strings.Split(r.RemoteAddr, ":")[0]))
+	span.SetAttributes(attribute.Key("Client IP").String(ip))
 	defer span.End()
+	Sugar.Infof("client_ip: %v", ip)
+	Sugar.Infof("request_id: %v", id)
 	fmt.Fprintf(w, "ok!")
 }
 
@@ -31,6 +34,8 @@ func HandleGetVideoById(w http.ResponseWriter, r *http.Request, p httprouter.Par
 	ctx, span := tr.Start(r.Context(), "GET Video By ID")
 	id := uuid.New()
 	ip := strings.Split(r.RemoteAddr, ":")[0]
+	Sugar.Infof("client_ip: %v", ip)
+	Sugar.Infof("request_id: %v", id)
 
 	defer span.End()
 
