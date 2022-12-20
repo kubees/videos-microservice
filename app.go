@@ -6,7 +6,6 @@ import (
 	"os"
 
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 
 	"github.com/go-redis/redis/v9"
@@ -68,8 +67,9 @@ func main() {
 }
 
 func video(writer http.ResponseWriter, request *http.Request, p httprouter.Params, ctx context.Context, requestID uuid.UUID, ip string) (response string) {
+	tr := traceProvider.Tracer("videos-ms-main-component")
+	ctx, span := tr.Start(ctx, "Fetch Videos From DB")
 
-	span := trace.SpanFromContext(ctx)
 	defer span.End()
 	span.SetAttributes(attribute.Key("Function").String("GET VIDEO FROM DB"))
 	span.SetAttributes(attribute.Key("UUID").String(requestID.String()))
